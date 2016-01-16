@@ -15,14 +15,26 @@ def _parse_trends(data):
 
 class FantasyLCS(object):
     data = {}
-    _index = {}
     season_id = None
+
+    teams = {}
+    players = {}
+    matches = {}
 
     def __init__(self, season_id):
         self.season_id = season_id
 
     def load(self):
         self.data = requests.get("http://fantasy.na.lolesports.com/en-US/api/season/%d" % self.season_id).json()
+
+        for team in self.data['proTeams']:
+            self.teams[team['id']] = Team(team, self)
+
+        for match in self.data['proMatches']:
+            self.matches[match['id']] = Match(match, self)
+
+        for player in self.data['proPlayers']:
+            self.players[player['id']] = Player(player, self)
 
     def get_season_name(self):
         return self.data['seasonName']
@@ -44,45 +56,39 @@ class FantasyLCS(object):
 
     def get_weekly_roster_locks(self):
         out = []
-
         for week in self.data['rosterLocksByWeek']:
             week_data = {}
             for region in self.data['rosterLocksByWeek'][week]:
                 week_data[region] = arrow.get(*self.data['rosterLocksByWeek'][week][region])
             out.append(week_data)
-
         return out
 
     def get_teams(self):
-        out = []
-
-        for team in self.data['proTeams']:
-            out.append(Team(team))
-
-        return out
+        return self.teams.values()
 
     def get_matches(self):
-        out = []
-
-        for match in self.data['proMatches']:
-            out.append(Match(match))
-
-        return out
+        return sorted(self.matches.values(), key=lambda x: x.get_datetime())
 
     def get_players(self):
-        out = []
+        return self.players.values()
 
-        for match in self.data['proPlayers']:
-            out.append(Player(match))
+    def get_player(self, _id):
+        return self.players.get(_id)
 
-        return out
+    def get_team(self, _id):
+        return self.teams.get(_id)
+
+    def get_match(self, _id):
+        return self.matches.get(_id)
 
 
 class Player(object):
     data = {}
+    _fantasylcs = None
 
-    def __init__(self, player_data):
+    def __init__(self, player_data, fantasylcs):
         self.data = player_data
+        self._fantasylcs = fantasylcs
 
     def get_id(self):
         return self.data['id']
@@ -124,10 +130,8 @@ class Player(object):
 
     def get_match_stats(self):
         out = {}
-
         for match_id in self.data['statsByMatch']:
             out[match_id] = Player._parse_player_stats(self.data['statsByMatch'][match_id])
-
         return out
 
     def get_weekly_trends(self):
@@ -136,9 +140,11 @@ class Player(object):
 
 class Match(object):
     data = {}
+    _fantasylcs = None
 
-    def __init__(self, match_data):
+    def __init__(self, match_data, fantasylcs):
         self.data = match_data
+        self._fantasylcs = fantasylcs
 
     def get_id(self):
         return self.data['id']
@@ -164,9 +170,11 @@ class Match(object):
 
 class Team(object):
     data = {}
+    _fantasylcs = None
 
-    def __init__(self, team_data):
+    def __init__(self, team_data, fantasylcs):
         self.data = team_data
+        self._fantasylcs = fantasylcs
 
     def get_id(self):
         return self.data['id']
@@ -208,11 +216,10 @@ class Team(object):
 
     def get_match_stats(self):
         out = {}
-
         for match_id in self.data['statsByMatch']:
             out[match_id] = Team._parse_team_stats(self.data['statsByMatch'][match_id])
-
         return out
 
     def get_weekly_trends(self):
         return [_parse_trends(self.data['trendsByWeek'][a]) for a in self.data['trendsByWeek']]
+
