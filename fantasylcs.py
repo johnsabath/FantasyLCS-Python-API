@@ -14,18 +14,19 @@ def _parse_trends(data):
 
 
 class FantasyLCS(object):
-    data = {}
-    season_id = None
-
-    teams = {}
-    players = {}
-    matches = {}
 
     def __init__(self, season_id):
         self.season_id = season_id
+        self.teams = {}
+        self.players = {}
+        self.matches = {}
+        self.data = {}
 
     def load(self):
         self.data = requests.get("http://fantasy.na.lolesports.com/en-US/api/season/%d" % self.season_id).json()
+
+        for player in self.data['proPlayers']:
+            self.players[player['id']] = Player(player, self)
 
         for team in self.data['proTeams']:
             self.teams[team['id']] = Team(team, self)
@@ -33,8 +34,11 @@ class FantasyLCS(object):
         for match in self.data['proMatches']:
             self.matches[match['id']] = Match(match, self)
 
-        for player in self.data['proPlayers']:
-            self.players[player['id']] = Player(player, self)
+        for player in self.players.values():
+            for match_id in player.get_match_stats():
+                stats = player.get_match_stats()[match_id]
+                if stats['matchesPlayed']['actual'] > 0:
+                    self.get_match(int(match_id)).players.append((player, stats))
 
     def get_season_name(self):
         return self.data['seasonName']
@@ -83,8 +87,6 @@ class FantasyLCS(object):
 
 
 class Player(object):
-    data = {}
-    _fantasylcs = None
 
     def __init__(self, player_data, fantasylcs):
         self.data = player_data
@@ -139,12 +141,11 @@ class Player(object):
 
 
 class Match(object):
-    data = {}
-    _fantasylcs = None
 
     def __init__(self, match_data, fantasylcs):
         self.data = match_data
         self._fantasylcs = fantasylcs
+        self.players = []
 
     def get_id(self):
         return self.data['id']
@@ -161,11 +162,22 @@ class Match(object):
     def get_red_team_id(self):
         return self.data['redTeamId']
 
+    def get_red_team(self):
+        return self._fantasylcs.get_team(self.get_red_team_id())
+
     def get_blue_team_id(self):
         return self.data['blueTeamId']
 
+    def get_blue_team(self):
+        return self._fantasylcs.get_team(self.get_blue_team_id())
+
     def is_completed(self):
         return self.data['complete']
+
+    def get_player_stats(self, team_id=None):
+        if team_id:
+            return filter(lambda x: x[0].get_team_id() == team_id, self.players)
+        return self.players
 
 
 class Team(object):
@@ -219,6 +231,9 @@ class Team(object):
         for match_id in self.data['statsByMatch']:
             out[match_id] = Team._parse_team_stats(self.data['statsByMatch'][match_id])
         return out
+
+    def get_single_match_stats(self, match_id):
+        return Team._parse_team_stats(self.data['statsByMatch'][str(match_id)])
 
     def get_weekly_trends(self):
         return [_parse_trends(self.data['trendsByWeek'][a]) for a in self.data['trendsByWeek']]
