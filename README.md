@@ -7,26 +7,6 @@
 
 
 ### Examples
-
-[Match Schedule](https://github.com/0Zaga0/FantasyLCS-Python-API/blob/master/examples/match_schedule.py)
-<pre>
-Week    Date              Blue Team             Red Team              Completed
-------  ----------------  --------------------  --------------------  -----------
-Week 1  Jan 14, 11:00 AM  Origen                Fnatic                Y
-Week 1  Jan 14, 12:00 PM  G2 Esports            Elements              Y
-Week 1  Jan 14, 1:00 PM   Giants                H2K                   Y
-Week 1  Jan 14, 2:00 PM   Unicorns of Love      Splyce                Y
-Week 1  Jan 14, 3:00 PM   ROCCAT                Vitality              Y
-Week 1  Jan 15, 11:00 AM  Unicorns of Love      Giants                Y
-Week 1  Jan 15, 12:00 PM  Elements              Splyce                Y
-Week 1  Jan 15, 1:00 PM   Fnatic                Vitality              Y
-Week 1  Jan 15, 2:00 PM   Origen                H2K                   Y
-Week 1  Jan 15, 3:00 PM   ROCCAT                G2 Esports            Y
-Week 1  Jan 16, 2:00 PM   Counter Logic Gaming  TSM                   N
-Week 1  Jan 16, 3:00 PM   Immortals             Cloud9                N
-...
-</pre>
-
 [Match Schedule](https://github.com/0Zaga0/FantasyLCS-Python-API/blob/master/examples/match_schedule.py)
 <pre>
 Week    Date              Blue Team             Red Team              Completed
