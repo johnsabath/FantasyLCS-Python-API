@@ -1,12 +1,19 @@
 # FantasyLCS-Python-API
 
-### Requirements
+#### NOTICE: The API used by this project is no longer available.
+
+## Purpose
+To enable the development of new tools and applications in the FantasyLCS community.
+
+It also served as the core of [LoLFantasyBot](https://github.com/johnsabath/LoLFantasyBot) a Reddit bot that posted fantasy breakdowns at the end of each LCS match.
+
+## Python Dependencies
 - Requests
 - Arrow
 - Tabulate (for examples)
 
 
-### Examples
+## Examples
 [Match Schedule](https://github.com/0Zaga0/FantasyLCS-Python-API/blob/master/examples/match_schedule.py)
 <pre>
 Week    Date              Blue Team             Red Team              Completed
